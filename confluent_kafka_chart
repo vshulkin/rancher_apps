@@ -1,0 +1,54 @@
+---
+  global: 
+    enterprise: true
+  cp-kafka: 
+    replicas: "3"
+    nodeport:
+      enabled: true
+      servicePort: 19092
+      firstListenerPort: 31090
+    persistence: 
+      enabled: true
+      size: "20Gi"
+      storageClass: "linstor"
+    configurationOverrides:
+      "advertised.listeners": |-
+       EXTERNAL://${HOST_IP}:31090
+      "confluent.support.metrics.enable": false
+  cp-zookeeper: 
+    persistence: 
+      enabled: true
+      dataDirSize: "1Gi"
+      dataDirStorageClass: "linstor"
+      dataLogDirSize: "1Gi"
+      dataLogDirStorageClass: "linstor"
+  kafka-topics-ui: 
+    enabled: true
+    ingress: 
+      enabled: true
+      hosts: 
+        - "xip.io"
+  cp-ksql-server:
+    image: confluentinc/cp-ksql-server
+    imageTag: 5.4.0-beta1
+    external:
+      enabled: true
+      type: NodePort
+      externalTrafficPolicy: Cluster
+      port: 30088
+    configurationOverrides:
+      "ksql.logging.processing.topic.auto.create": true
+      "ksql.logging.processing.topic.name":  "default_ksql_processing_log"
+      "ksql.logging.processing.topic.partitions": "1"
+      "ksql.logging.processing.topic.replication.factor": "1"
+      "ksql.logging.processing.stream.auto.create": true
+      "ksql.logging.processing.stream.name": "KSQL_PROCESSING_LOG"
+      "ksql.logging.processing.rows.include": true
+  cp-control-center:
+    image: confluentinc/cp-enterprise-control-center
+    imageTag: 5.4.0-beta1
+    cp-ksql-server:
+      url: "http://ksql-ingress.kafka.192.168.0.10.xip.io"
+  cp-kafka-connect:
+    configurationOverrides:
+      "plugin.path": "/usr/share/java,/usr/share/confluent-hub-components"
