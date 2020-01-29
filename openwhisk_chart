@@ -1,0 +1,23 @@
+---
+  k8s:
+    persistence: 
+      enabled: "true"
+  whisk: 
+    ingress: 
+      apiHostName: apigateway.local.unixexpo.com
+      apiHostPort: 443
+      apiHostProto: https
+      type: Standard
+      domain: apigateway.local.unixexpo.com
+      tls: 
+        createsecret: false
+        enabled: true
+        secretenabled: false
+        secretname: "star-local-unixexpo-com"
+      annotations:
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "75s"
+        nginx.ingress.kubernetes.io/client-max-body-size: "size=50m"
+        nginx.ingress.kubernetes.io/proxy-add-headers: |
+           serviceName=owdev-controller {
+             'X-Request-ID' $request_id;
+           }
